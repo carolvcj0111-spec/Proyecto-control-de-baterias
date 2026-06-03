@@ -1,40 +1,11 @@
 # Proyecto-control-de-baterias
 Proyecto grupal - Control de Baterías
-# 🔋 Proyecto: Control de Baterías (BMS)
-
-**Integrantes:**
-- Johan Campo
-- Carol Castellanos
-- Jairo Córdoba
-- Diego Martelo
-- Pedro Regalao
-
----
-
-## 📌 Descripción del Proyecto
+# Proyecto: Control de Baterías (BMS)
 
 Este repositorio contiene el desarrollo completo de un **Sistema de Gestión de Baterías (BMS)**
 diseñado para monitorear, proteger y controlar la carga y descarga de baterías de litio de 3.7V.
 El sistema es capaz de gestionar múltiples celdas de forma independiente, garantizando su
 correcto funcionamiento y prolongando su vida útil.
-
----
-
-## 📁 Contenido del Repositorio
-
-### 🖼️ Imágenes y Evidencias
-- **ImplementaciónProtoboard.jpeg** — Foto del circuito armado en protoboard
-- **PCB_Diseño.jpeg** — Diseño del PCB del sistema
-- **PCB_Objetivo.jpeg** — PCB físico fabricado
-- **PrototiposTemprano.jpeg** — Fotografías de los primeros prototipos
-- **Chasis.jpeg** — Estructura física del proyecto
-- **DibujoCircuitoAMano.jpeg** — Esquemático dibujado a mano durante el diseño
-- **CircuitoControladorDeCargaBAT1.jpeg** — Esquemático del controlador para la Batería 1
-- **CircuitoControladorDeCargaBAT2.jpeg** — Esquemático del controlador para la Batería 2
-- **CircuitoControladorDeCargaBAT3.jpeg** — Esquemático del controlador para la Batería 3
-- **Extra.jpeg** — Material adicional del proyecto
-- **Expectativa.png** — Imagen del diseño esperado del sistema
-- **PaginaWeb.jpeg / PaginaWeb.html** — Prototipo de página web del proyecto
 
 ### 📄 Documentos
 - **BorradorINFORME.docx** — Borrador del informe técnico del proyecto
