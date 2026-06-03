@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMS Monitor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;600;800&display=swap');
+
+  :root {
+    --verde:   #00ff88;
+    --amarillo:#ffd700;
+    --rojo:    #ff3355;
+    --azul:    #00ccff;
+    --bg:      #0a0e1a;
+    --panel:   #111827;
+    --borde:   #1e2d45;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: #e0e6f0;
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  header {
+    text-align: center;
+    padding: 20px 0 30px;
+    border-bottom: 1px solid var(--borde);
+    margin-bottom: 30px;
+  }
+
+  header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: var(--verde);
+    text-shadow: 0 0 20px rgba(0,255,136,0.4);
+  }
+
+  header p {
+    font-family: 'Share Tech Mono', monospace;
+    color: #5a7a9a;
+    font-size: 0.85rem;
+    margin-top: 6px;
+    letter-spacing: 2px;
+  }
+
+  .conexion {
+    max-width: 500px;
+    margin: 0 auto 30px;
+    text-align: center;
+  }
+
+  .btn-conectar {
+    background: transparent;
+    border: 2px solid var(--verde);
+    color: var(--verde);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    padding: 12px 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-conectar:hover {
+    background: rgba(0,255,136,0.1);
+    box-shadow: 0 0 20px rgba(0,255,136,0.3);
+  }
+
+  .btn-conectar:disabled {
+    border-color: #2a3a55;
+    color: #2a3a55;
+    cursor: not-allowed;
+  }
+
+  #estado-conexion {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    margin-top: 12px;
+    color: #5a7a9a;
+  }
+
+  .resumen {
+    max-width: 900px;
+    margin: 0 auto 30px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  @media (max-width: 500px) { .resumen { grid-template-columns: 1fr; } }
+
+  .resumen-card {
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .resumen-card .label {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: #5a7a9a;
+    font-family: 'Share Tech Mono', monospace;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .resumen-card .valor {
+    font-size: 1.6rem;
+    font-weight: 800;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--verde);
+  }
+
+  .strings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 900px;
+    margin: 0 auto 30px;
+  }
+
+  @media (max-width: 600px) { .strings { grid-template-columns: 1fr; } }
+
+  .string-block {
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .string-title {
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    color: var(--azul);
+    font-family: 'Share Tech Mono', monospace;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+
+  .celda-card {
+    background: #0d1520;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .celda-card.ok        { border-left: 3px solid var(--verde); }
+  .celda-card.bajo      { border-left: 3px solid var(--amarillo); }
+  .celda-card.critico   { border-left: 3px solid var(--rojo); animation: pulso 1s infinite; }
+  .celda-card.sobrecarga{ border-left: 3px solid var(--rojo); }
+  .celda-card.llena     { border-left: 3px solid var(--azul); }
+
+  @keyframes pulso {
+    0%,100% { box-shadow: none; }
+    50%      { box-shadow: 0 0 12px rgba(255,51,85,0.4); }
+  }
+
+  .celda-nombre {
+    font-size: 0.75rem;
+    color: #5a7a9a;
+    font-family: 'Share Tech Mono', monospace;
+    min-width: 90px;
+  }
+
+  .celda-voltaje {
+    font-size: 1.4rem;
+    font-weight: 800;
+    font-family: 'Share Tech Mono', monospace;
+    min-width: 70px;
+  }
+
+  .celda-voltaje.ok        { color: var(--verde); }
+  .celda-voltaje.bajo      { color: var(--amarillo); }
+  .celda-voltaje.critico   { color: var(--rojo); }
+  .celda-voltaje.sobrecarga{ color: var(--rojo); }
+  .celda-voltaje.llena     { color: var(--azul); }
+
+  .soc-bar-wrap { flex: 1; }
+
+  .soc-label {
+    font-size: 0.7rem;
+    color: #5a7a9a;
+    font-family: 'Share Tech Mono', monospace;
+    margin-bottom: 4px;
+  }
+
+  .soc-bar {
+    height: 6px;
+    background: #1e2d45;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .soc-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  .soc-fill.ok        { background: var(--verde); }
+  .soc-fill.bajo      { background: var(--amarillo); }
+  .soc-fill.critico   { background: var(--rojo); }
+  .soc-fill.sobrecarga{ background: var(--rojo); }
+  .soc-fill.llena     { background: var(--azul); }
+
+  .estado-badge {
+    font-size: 0.65rem;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    min-width: 72px;
+    text-align: center;
+  }
+
+  .estado-badge.ok        { background: rgba(0,255,136,0.1);  color: var(--verde); }
+  .estado-badge.bajo      { background: rgba(255,215,0,0.1);   color: var(--amarillo); }
+  .estado-badge.critico   { background: rgba(255,51,85,0.15);  color: var(--rojo); }
+  .estado-badge.sobrecarga{ background: rgba(255,51,85,0.15);  color: var(--rojo); }
+  .estado-badge.llena     { background: rgba(0,204,255,0.1);   color: var(--azul); }
+
+  #ultima-act {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: #3a5a7a;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .footer {
+    text-align: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: #2a3a55;
+    padding: 20px 0;
+  }
+
+  .aviso {
+    max-width: 500px;
+    margin: 0 auto 20px;
+    background: rgba(255,215,0,0.08);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--amarillo);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ BMS MONITOR</h1>
+  <p>ARDUINO UNO · 6 CELDAS · WEB SERIAL</p>
+</header>
+
+<div class="aviso">
+  ⚠ Requiere Chrome o Edge · Conecta el Arduino antes de presionar el botón
+</div>
+
+<div class="conexion">
+  <button class="btn-conectar" id="btn-conectar" onclick="conectar()">
+    CONECTAR ARDUINO
+  </button>
+  <div id="estado-conexion">Sin conexión</div>
+</div>
+
+<div class="resumen">
+  <div class="resumen-card">
+    <div class="label">Pack A (4 celdas)</div>
+    <div class="valor" id="v-pack-a">--.-V</div>
+  </div>
+  <div class="resumen-card">
+    <div class="label">Pack B (2 celdas)</div>
+    <div class="valor" id="v-pack-b">--.-V</div>
+  </div>
+  <div class="resumen-card">
+    <div class="label">SOC Promedio</div>
+    <div class="valor" id="soc-prom">--%</div>
+  </div>
+</div>
+
+<p id="ultima-act">Esperando datos...</p>
+
+<div class="strings">
+  <div class="string-block">
+    <div class="string-title">▶ String A — 4 celdas</div>
+    <div id="celdas-a"></div>
+  </div>
+  <div class="string-block">
+    <div class="string-title">▶ String B — 2 celdas</div>
+    <div id="celdas-b"></div>
+  </div>
+</div>
+
+<div class="footer">BMS ANALOGICO 4S2P · ARDUINO UNO · ELECTRÓNICA II</div>
+
+<script>
+let port, reader, buffer = '';
+
+function claseEstado(estado) {
+  const m = {'OK':'ok','BAJO':'bajo','CRITICO':'critico','SOBRECARGA':'sobrecarga','LLENA':'llena'};
+  return m[estado] || 'ok';
+}
+
+function renderCelda(c) {
+  const cls = claseEstado(c.estado);
+  return `
+  <div class="celda-card ${cls}">
+    <div class="celda-nombre">${c.nombre}</div>
+    <div class="celda-voltaje ${cls}">${c.voltaje.toFixed(2)}V</div>
+    <div class="soc-bar-wrap">
+      <div class="soc-label">${c.soc.toFixed(0)}% SOC</div>
+      <div class="soc-bar">
+        <div class="soc-fill ${cls}" style="width:${c.soc}%"></div>
+      </div>
+    </div>
+    <div class="estado-badge ${cls}">${c.estado}</div>
+  </div>`;
+}
+
+function actualizarUI(datos) {
+  const celdas = datos.celdas;
+
+  // String A: celdas 0-3
+  document.getElementById('celdas-a').innerHTML =
+    celdas.slice(0,4).map(renderCelda).join('');
+
+  // String B: celdas 4-5
+  document.getElementById('celdas-b').innerHTML =
+    celdas.slice(4,6).map(renderCelda).join('');
+
+  // Resumen Pack A (suma 4 celdas)
+  const sumA = celdas.slice(0,4).reduce((s,c) => s + c.voltaje, 0);
+  const sumB = celdas.slice(4,6).reduce((s,c) => s + c.voltaje, 0);
+  const socProm = celdas.reduce((s,c) => s + c.soc, 0) / celdas.length;
+
+  document.getElementById('v-pack-a').textContent = sumA.toFixed(2) + 'V';
+  document.getElementById('v-pack-b').textContent = sumB.toFixed(2) + 'V';
+  document.getElementById('soc-prom').textContent = socProm.toFixed(0) + '%';
+
+  const ahora = new Date();
+  document.getElementById('ultima-act').textContent =
+    'Última actualización: ' + ahora.toLocaleTimeString();
+}
+
+function procesarBuffer() {
+  const lineas = buffer.split('\n');
+  buffer = lineas.pop(); // guarda lo incompleto
+
+  for (const linea of lineas) {
+    const trimmed = linea.trim();
+    if (trimmed.startsWith('{')) {
+      try {
+        const datos = JSON.parse(trimmed);
+        if (datos.celdas) actualizarUI(datos);
+      } catch(e) {
+        // JSON incompleto, ignorar
+      }
+    }
+  }
+}
+
+async function conectar() {
+  if (!('serial' in navigator)) {
+    document.getElementById('estado-conexion').textContent =
+      '❌ Web Serial no soportado. Usa Chrome o Edge.';
+    return;
+  }
+
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 9600 });
+
+    document.getElementById('estado-conexion').textContent = '✅ Conectado';
+    document.getElementById('btn-conectar').disabled = true;
+
+    const decoder = new TextDecoderStream();
+    port.readable.pipeTo(decoder.writable);
+    reader = decoder.readable.getReader();
+
+    // Leer continuamente
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += value;
+      procesarBuffer();
+    }
+
+  } catch(e) {
+    document.getElementById('estado-conexion').textContent =
+      '❌ Error: ' + e.message;
+    document.getElementById('btn-conectar').disabled = false;
+  }
+}
+</script>
+</body>
+</html>
