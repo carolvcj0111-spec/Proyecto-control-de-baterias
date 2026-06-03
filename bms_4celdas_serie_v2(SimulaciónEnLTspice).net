@@ -1,0 +1,184 @@
+* BMS ANALOGICO - 4 CELDAS MODO SERIE (DESCARGA) v2
+* Celdas 1 y 2: Samsung ICR18650-22F (sobredescarga 2.75V)
+* Celdas 3 y 4: LIBOWER LB-XY/A1   (sobredescarga 3.0V)
+* Vcc=24V | Sobrecarga=4.21V | Temp=45C
+* Simulacion: .tran 1
+* Celda 1 baja mas rapido -> BMS la corta -> demas siguen descargando
+
+*==============================================================
+* FUENTE PRINCIPAL
+*==============================================================
+VVCC    VCC  0  DC 24
+
+*==============================================================
+* PALANCA - arranca en 24V desde t=0 (modo descarga activo)
+*==============================================================
+V_PALANCA  PALANCA  0  PULSE(0 24 0 1n 1n 2 4)
+
+*==============================================================
+* CELDAS CON DESCARGA SIMULADA (PWL)
+* C1 Samsung: 4.1V -> 2.5V en 1s (se agota primero, BMS debe cortarla)
+* C2 Samsung: 4.1V -> 3.2V en 1s (sigue bien)
+* C3 LIBOWER: 4.0V -> 3.3V en 1s (sigue bien)
+* C4 LIBOWER: 4.0V -> 3.4V en 1s (sigue bien)
+*==============================================================
+VBAT1  BAT1_POS  0  PWL(0 4.1 1 2.5)
+VBAT2  BAT2_POS  0  PWL(0 4.1 1 3.2)
+VBAT3  BAT3_POS  0  PWL(0 4.0 1 3.3)
+VBAT4  BAT4_POS  0  PWL(0 4.0 1 3.4)
+
+*==============================================================
+* SWITCHES DPDT - simulan reles
+* Cuando PALANCA=24V -> switches cierran -> celdas en serie
+* Ron=1m Roff=1Meg Vt=12V Vh=1V
+*==============================================================
+SW1  BAT1_POS  SERIE12   PALANCA  0  SWMOD
+SW2  BAT2_POS  SERIE23   PALANCA  0  SWMOD
+SW3  BAT3_POS  SERIE34   PALANCA  0  SWMOD
+SW4  BAT4_POS  CARGA_POS PALANCA  0  SWMOD
+
+*==============================================================
+* CONEXIONES EN SERIE
+* GND -> M_PROT1 -> BAT1 -> SERIE12 -> BAT2 -> SERIE23 -> BAT3 -> SERIE34 -> BAT4 -> CARGA_POS -> R_CARGA -> GND
+*==============================================================
+R_S12   SERIE12    BAT2_NEG   0.001
+R_S23   SERIE23    BAT3_NEG   0.001
+R_S34   SERIE34    BAT4_NEG   0.001
+
+*==============================================================
+* CARGA RESISTIVA 15 ohm
+* Con pack lleno 16.2V: I=1.08A P=17.5W
+*==============================================================
+R_CARGA  CARGA_POS  0  15
+
+*==============================================================
+* =================== CELDA 1 - SAMSUNG ====================
+*==============================================================
+R1A_SD1  VCC      N_R1SD1  75k
+R1B_SD1  N_R1SD1  N_SD1    2.2k
+R2_SD1   N_SD1    0        10k
+
+R1_SC1   VCC      N_SC1    47k
+R2_SC1   N_SC1    0        10k
+
+R_PU_NTC1  VCC    N_NTC1   10k
+R_NTC1     N_NTC1 0        4.7k
+
+R1A_TR1  VCC      N_R1TR1  20k
+R1B_TR1  N_R1TR1  N_TREF1  1.5k
+R2_TR1   N_TREF1  0        10k
+
+XU1_1  BAT1_POS  N_SD1    VCC  0  OUT_U1_1  LT1013
+XU1_2  N_SC1     BAT1_POS VCC  0  OUT_U1_2  LT1013
+XU1_3  N_NTC1    N_TREF1  VCC  0  OUT_U1_3  LT1013
+
+D1_1  N_GP1  OUT_U1_1  1N4148
+D1_2  N_GP1  OUT_U1_2  1N4148
+D1_3  N_GP1  OUT_U1_3  1N4148
+R_PU_GP1  VCC  N_GP1  10k
+
+* Drain del MOSFET va a GND (negativo del pack en serie)
+M_PROT1  BAT1_NEG_GND  N_GP1  0  0  IRFZ44N
+R_BN1    BAT1_NEG_GND  0      0.001
+
+*==============================================================
+* =================== CELDA 2 - SAMSUNG ====================
+*==============================================================
+R1A_SD2  VCC      N_R1SD2  75k
+R1B_SD2  N_R1SD2  N_SD2    2.2k
+R2_SD2   N_SD2    0        10k
+
+R1_SC2   VCC      N_SC2    47k
+R2_SC2   N_SC2    0        10k
+
+R_PU_NTC2  VCC    N_NTC2   10k
+R_NTC2     N_NTC2 0        4.7k
+
+R1A_TR2  VCC      N_R1TR2  20k
+R1B_TR2  N_R1TR2  N_TREF2  1.5k
+R2_TR2   N_TREF2  0        10k
+
+XU2_1  BAT2_POS  N_SD2    VCC  0  OUT_U2_1  LT1013
+XU2_2  N_SC2     BAT2_POS VCC  0  OUT_U2_2  LT1013
+XU2_3  N_NTC2    N_TREF2  VCC  0  OUT_U2_3  LT1013
+
+D2_1  N_GP2  OUT_U2_1  1N4148
+D2_2  N_GP2  OUT_U2_2  1N4148
+D2_3  N_GP2  OUT_U2_3  1N4148
+R_PU_GP2  VCC  N_GP2  10k
+
+M_PROT2  BAT2_NEG  N_GP2  0  0  IRFZ44N
+
+*==============================================================
+* =================== CELDA 3 - LIBOWER ====================
+*==============================================================
+R1A_SD3  VCC      N_R1SD3  68k
+R1B_SD3  N_R1SD3  N_SD3    2.2k
+R2_SD3   N_SD3    0        10k
+
+R1_SC3   VCC      N_SC3    47k
+R2_SC3   N_SC3    0        10k
+
+R_PU_NTC3  VCC    N_NTC3   10k
+R_NTC3     N_NTC3 0        4.7k
+
+R1A_TR3  VCC      N_R1TR3  20k
+R1B_TR3  N_R1TR3  N_TREF3  1.5k
+R2_TR3   N_TREF3  0        10k
+
+XU3_1  BAT3_POS  N_SD3    VCC  0  OUT_U3_1  LT1013
+XU3_2  N_SC3     BAT3_POS VCC  0  OUT_U3_2  LT1013
+XU3_3  N_NTC3    N_TREF3  VCC  0  OUT_U3_3  LT1013
+
+D3_1  N_GP3  OUT_U3_1  1N4148
+D3_2  N_GP3  OUT_U3_2  1N4148
+D3_3  N_GP3  OUT_U3_3  1N4148
+R_PU_GP3  VCC  N_GP3  10k
+
+M_PROT3  BAT3_NEG  N_GP3  0  0  IRFZ44N
+
+*==============================================================
+* =================== CELDA 4 - LIBOWER ====================
+*==============================================================
+R1A_SD4  VCC      N_R1SD4  68k
+R1B_SD4  N_R1SD4  N_SD4    2.2k
+R2_SD4   N_SD4    0        10k
+
+R1_SC4   VCC      N_SC4    47k
+R2_SC4   N_SC4    0        10k
+
+R_PU_NTC4  VCC    N_NTC4   10k
+R_NTC4     N_NTC4 0        4.7k
+
+R1A_TR4  VCC      N_R1TR4  20k
+R1B_TR4  N_R1TR4  N_TREF4  1.5k
+R2_TR4   N_TREF4  0        10k
+
+XU4_1  BAT4_POS  N_SD4    VCC  0  OUT_U4_1  LT1013
+XU4_2  N_SC4     BAT4_POS VCC  0  OUT_U4_2  LT1013
+XU4_3  N_NTC4    N_TREF4  VCC  0  OUT_U4_3  LT1013
+
+D4_1  N_GP4  OUT_U4_1  1N4148
+D4_2  N_GP4  OUT_U4_2  1N4148
+D4_3  N_GP4  OUT_U4_3  1N4148
+R_PU_GP4  VCC  N_GP4  10k
+
+M_PROT4  BAT4_NEG  N_GP4  0  0  IRFZ44N
+
+*==============================================================
+* MODELOS
+*==============================================================
+.lib C:\Users\jairo\AppData\Local\LTspice\lib\sub\LT1013.sub
+.model IRFZ44N NMOS(Level=3 Gamma=0 Delta=0 Eta=0 Theta=0 Kappa=0.2 Vmax=0 Xj=0
++ Tox=100n Uo=600 Phi=0.6 Rs=69.6m Kp=0.25 L=2u W=2.94m Vto=3.7 Rd=0.015
++ Rds=2.4Meg Cbd=1n Pb=0.8 Mj=0.5 Cgso=9.3n Cgdo=0.1n Rg=0.4 Is=81p N=1.09)
+.model 1N4148 D(Is=2.52n Rs=0.568 N=1.752 Cjo=4p M=0.4 tt=20n Iave=200m Vpk=75)
+.model SWMOD SW(Ron=0.001 Roff=1Meg Vt=12 Vh=1)
+
+*==============================================================
+* SIMULACION TRANSITORIA 1 segundo
+*==============================================================
+.tran 1
+
+.backanno
+.end
